@@ -11,7 +11,7 @@ const nextConfig = {
   },
   experimental: {
     // [핵심] Next.js 16 Turbopack 에러 해결을 위해 빈 객체라도 명시해야 합니다.
-    turbopack: {}, 
+    turbopack: {},
     optimizeCss: true,
     scrollRestoration: true,
     optimizePackageImports: ['@mantine/core', '@mantine/hooks']
@@ -34,7 +34,7 @@ const nextConfig = {
       ...config.resolve.alias,
       '@': path.resolve(__dirname, 'src'),
     };
-    
+
     // RCE 취약점 및 보안 강화를 위한 브라우저 측 모듈 차단
     if (!isServer) {
       config.resolve.fallback = {
@@ -45,14 +45,14 @@ const nextConfig = {
         child_process: false,
       };
     }
-    
+
     return config;
   },
   async rewrites() {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:5001/:path*' // 백엔드 주소
+        destination: 'http://backend:5001/api/:path*' // 백엔드 경로 포함
       }
     ]
   }
