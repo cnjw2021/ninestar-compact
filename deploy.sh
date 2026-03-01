@@ -49,16 +49,45 @@ docker compose -f ${COMPOSE_FILE} down
 echo ""
 
 # --------------------------------------------------
-# SSL 인증서 확인 및 최초 자동 발급
+# SSL 인증서 및 보안 파일 확인/복구
 # --------------------------------------------------
 DOMAIN="831shop.site"
-if [ ! -f "certbot/conf/live/${DOMAIN}/fullchain.pem" ]; then
+
+# 1. Nginx 기본 보안 파일 복구 (init-ssl.sh가 중간에 끊겼을 때 대비)
+if [ ! -f "certbot/conf/options-ssl-nginx.conf" ]; then
+    echo -e "${YELLOW}👉 SSL 보안 옵션 파일이 없습니다. 자동으로 생성합니다...${NC}"
+    mkdir -p ./certbot/conf
+    cat > ./certbot/conf/options-ssl-nginx.conf <<EOF
+ssl_session_cache shared:le_nginx_SSL:10m;
+ssl_session_timeout 1440m;
+ssl_session_tickets off;
+
+ssl_protocols TLSv1.2 TLSv1.3;
+ssl_prefer_server_ciphers off;
+
+ssl_ciphers "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384";
+EOF
+fi
+
+if [ ! -f "certbot/conf/ssl-dhparams.pem" ]; then
+    echo -e "${YELLOW}👉 SSL DH 파라미터가 없습니다. 자동으로 생성합니다 (수 분 소요될 수 있음)...${NC}"
+    openssl dhparam -out ./certbot/conf/ssl-dhparams.pem 2048
+fi
+
+# 2. 인증서 실존 여부를 Docker 권한으로 체크 (certbot 폴더가 root 소유라 일반 권한으로 안 보일 수 있음)
+docker pull ${REGISTRY}-nginx:latest >/dev/null 2>&1 || true
+HAS_CERT=$(docker run --rm -v "$(pwd)/certbot/conf:/etc/letsencrypt" ${REGISTRY}-nginx:latest sh -c "test -f /etc/letsencrypt/live/${DOMAIN}/fullchain.pem && echo 'yes' || echo 'no'")
+
+if [ "$HAS_CERT" = "no" ]; then
     echo -e "${YELLOW}👉 SSL 인증서가 없습니다. 최초 발급 스크립트(init-ssl.sh)를 자동으로 실행합니다...${NC}"
     if [ ! -x "init-ssl.sh" ]; then
         chmod +x init-ssl.sh
     fi
     ./init-ssl.sh
     echo -e "${GREEN}✅ SSL 인증서 발급 완료. 배포를 계속합니다...${NC}"
+    echo ""
+else
+    echo -e "${GREEN}✅ 기존 SSL 인증서(${DOMAIN})가 확인되었습니다. 발급을 건너뜁니다.${NC}"
     echo ""
 fi
 
