@@ -1,23 +1,23 @@
-# CI テスト アーキテクチャ
+# CI 테스트 아키텍처
 
-> **最終更新:** 2026-03-01  
-> **対象ブランチ:** `fix/integration-test-seeding`
+> **최종 업데이트:** 2026-03-01  
+> **대상 브랜치:** `fix/integration-test-seeding`
 
-## 概要
+## 개요
 
-本プロジェクトの CI パイプラインは、テストを **単体テスト (Unit Test)** と **統合テスト (Integration / E2E Test)** に分離し、それぞれ異なるトリガーで実行します。
+본 프로젝트의 CI 파이프라인은 테스트를 **단위 테스트 (Unit Test)** 와 **통합 테스트 (Integration / E2E Test)** 로 분리하여, 각각 다른 트리거로 실행합니다.
 
-| テスト種別 | トリガー | ワークフロー | Makefile ターゲット | DB 必要 |
+| 테스트 종류 | 트리거 | 워크플로우 | Makefile 타겟 | DB 필요 |
 |-----------|---------|-------------|-------------------|---------|
-| 単体テスト | Push / PR → `main` (自動) | `ci.yml` | `make test-unit` | ❌ |
-| 統合テスト | `workflow_dispatch` (手動) | `integration-test.yml` | `make test-integration` | ✅ |
-| 全テスト | ローカル実行 | — | `make test` | ✅ |
+| 단위 테스트 | Push / PR → `main` (자동) | `ci.yml` | `make test-unit` | ❌ |
+| 통합 테스트 | `workflow_dispatch` (수동) | `integration-test.yml` | `make test-integration` | ✅ |
+| 전체 테스트 | 로컬 실행 | — | `make test` | ✅ |
 
 ---
 
-## テスト分類
+## 테스트 분류
 
-### 単体テスト (23件) — DB 不要
+### 단위 테스트 (23건) — DB 불필요
 ```
 tests/unit/test_daily_star_reading_use_case.py
 tests/unit/test_reading_query_use_case.py
@@ -30,7 +30,7 @@ tests/test_solar_starts_repository_param.py
 tests/test_solar_terms_boundaries.py
 ```
 
-### 統合テスト (35件) — バックエンド API + DB 必須
+### 통합 테스트 (35건) — 백엔드 API + DB 필수
 ```
 tests/golden_master/test_annual_directions.py
 tests/golden_master/test_auspicious_days_report.py
@@ -47,102 +47,102 @@ tests/test_direction_fortune_birthdate_2026.py
 
 ---
 
-## 調査・修正の経緯
+## 조사 및 수정 과정
 
-### Phase 1: 基本的な CI セットアップ
+### Phase 1: 기본 CI 셋업
 
-**問題:** GitHub Actions で `make test` を実行するとすべてのテストが失敗。
+**문제:** GitHub Actions에서 `make test` 실행 시 전체 테스트 실패.
 
-**調査結果:**
-- `PermissionError: [Errno 13] Permission denied: '/app/logs'` — Docker コンテナ内のユーザー権限問題
-- `backend-test` コンテナが `appuser` として実行され、ログディレクトリへの書き込み不可
+**조사 결과:**
+- `PermissionError: [Errno 13] Permission denied: '/app/logs'` — Docker 컨테이너 내부 사용자 권한 문제
+- `backend-test` 컨테이너가 `appuser`로 실행되어 로그 디렉토리에 쓰기 불가
 
-**修正:**
-- `docker-compose.dev.yml` の `backend-test` に `user: root` を追加
-- CI ワークフローで `mkdir -p backend/logs backend/.pytest_cache && chmod -R 777` を実行
-
----
-
-### Phase 2: バックエンドコンテナのヘルスチェック失敗
-
-**問題:** `dependency failed to start: container backend-container is unhealthy`
-
-**調査結果:**
-1. **Linux ファイル権限の衝突:** `db_manage.py init` が `root` として `/app/logs/app.log` を作成 → その後 `gunicorn` が `appuser` として起動 → Permission Denied で worker が全滅
-2. **GitHub Actions の遅い環境:** 2コア runner でのヘルスチェックタイムアウト
-
-**修正:**
-- `start.sh` に `chown -R appuser:appgroup /app/logs` を追加（`gunicorn` fork 前）
-- ヘルスチェックの `start_period: 30s`, `retries: 15` に増加
+**수정:**
+- `docker-compose.dev.yml`의 `backend-test`에 `user: root` 추가
+- CI 워크플로우에서 `mkdir -p backend/logs backend/.pytest_cache && chmod -R 777` 실행
 
 ---
 
-### Phase 3: データベース接続エラー (Access Denied)
+### Phase 2: 백엔드 컨테이너 헬스체크 실패
 
-**問題:** `Access denied for user 'ninestarki'@'172.18.0.4' (using password: YES)`
+**문제:** `dependency failed to start: container backend-container is unhealthy`
 
-**調査結果（根本原因の特定に至るまでの調査）:**
+**조사 결과:**
+1. **Linux 파일 권한 충돌:** `db_manage.py init`이 `root`로 `/app/logs/app.log`를 생성 → 이후 `gunicorn`이 `appuser`로 기동 → Permission Denied로 worker 전멸
+2. **GitHub Actions의 느린 환경:** 2코어 runner에서 헬스체크 타임아웃
 
-1. **環境変数の伝搬経路の分析:**
+**수정:**
+- `start.sh`에 `chown -R appuser:appgroup /app/logs` 추가 (`gunicorn` fork 전)
+- 헬스체크 `start_period: 30s`, `retries: 15`로 증가
+
+---
+
+### Phase 3: 데이터베이스 연결 오류 (Access Denied)
+
+**문제:** `Access denied for user 'ninestarki'@'172.18.0.4' (using password: YES)`
+
+**조사 결과 (근본 원인 특정까지의 과정):**
+
+1. **환경변수 전파 경로 분석:**
    ```
-   ci.yml env → .env (root) → docker-compose.yml → mysql コンテナ
-                             → backend/.env.development.backend → backend コンテナ
+   ci.yml env → .env (root) → docker-compose.yml → mysql 컨테이너
+                             → backend/.env.development.backend → backend 컨테이너
    ```
 
-2. **`touch` vs `>` の違い:**
-   - `touch backend/.env.production.backend` → **ファイル内容は保持される**（タイムスタンプのみ更新）
-   - `> backend/.env.production.backend` → **ファイル内容が空になる**
+2. **`touch` vs `>`의 차이:**
+   - `touch backend/.env.production.backend` → **파일 내용이 유지됨** (타임스탬프만 갱신)
+   - `> backend/.env.production.backend` → **파일 내용이 비워짐**
 
-3. **`DATABASE_URL` の優先順位問題:**
-   - `backend/.env.production.backend` が **Git にコミット** されていた
-   - 内容: `DATABASE_URL=mysql+pymysql://ninestarki:ninestarki_password@mysql:3306/ninestarki`
-   - `core/db_config.py` は `DATABASE_URL` を `DB_USER` より**優先**して使用（line 89）
-   - CI で `DB_USER=superuser` を設定しても、`DATABASE_URL` が勝つため常に `ninestarki` で接続
+3. **`DATABASE_URL` 우선순위 문제:**
+   - `backend/.env.production.backend`가 **Git에 커밋**되어 있었음
+   - 내용: `DATABASE_URL=mysql+pymysql://ninestarki:ninestarki_password@mysql:3306/ninestarki`
+   - `core/db_config.py`는 `DATABASE_URL`을 `DB_USER`보다 **우선** 사용 (line 89)
+   - CI에서 `DB_USER=superuser`를 설정해도, `DATABASE_URL`이 우선하므로 항상 `ninestarki`로 접속
 
-**修正:**
+**수정:**
 ```yaml
-# ci.yml - 本番環境ファイルをtruncate (touch ではなく >)
+# ci.yml - 프로덕션 환경 파일을 truncate (touch가 아닌 >)
 > backend/.env.production.backend
 
-# 開発用 .env に DATABASE_URL を含む全変数を生成
+# 개발용 .env에 DATABASE_URL을 포함한 전체 변수 생성
 echo "DATABASE_URL=mysql+pymysql://${DB_USER}:${DB_PASSWORD}@mysql:3306/${DB_NAME}?charset=utf8mb4" >> backend/.env.development.backend
 ```
 
 ---
 
-### Phase 4: 単体テスト / 統合テスト の分離
+### Phase 4: 단위 테스트 / 통합 테스트 분리
 
-**問題:** DB が空の状態では統合テストが必ず失敗する（`No yearly_info for 2025` 等）
+**문제:** DB가 빈 상태에서는 통합 테스트가 반드시 실패 (`No yearly_info for 2025` 등)
 
-**判断:** CI の自動テストは単体テストのみに限定し、統合テストは `workflow_dispatch` で手動実行する
+**판단:** CI의 자동 테스트는 단위 테스트만으로 한정하고, 통합 테스트는 `workflow_dispatch`로 수동 실행
 
-**修正:**
-- `ci.yml`: `make test` → `make test-unit` に変更
-- `integration-test.yml`: 新規作成（`workflow_dispatch` トリガー）
-- `Makefile`: `test-unit`, `test-integration`, `db-seed` ターゲット追加
+**수정:**
+- `ci.yml`: `make test` → `make test-unit`으로 변경
+- `integration-test.yml`: 신규 생성 (`workflow_dispatch` 트리거)
+- `Makefile`: `test-unit`, `test-integration`, `db-seed` 타겟 추가
 
 ---
 
-### Phase 5: 統合テスト用のデータシーディング
+### Phase 5: 통합 테스트용 데이터 시딩
 
-**問題:** `make test-integration` を実行しても DB が空で全テスト失敗
+**문제:** `make test-integration`을 실행해도 DB가 비어 있어 전체 테스트 실패
 
-**調査結果（3つのバグを段階的に発見）:**
+**조사 결과 (3개의 버그를 단계적으로 발견):**
 
-| # | エラーメッセージ | 原因 | 修正 |
-|---|----------------|------|------|
-| 1 | `Access denied for user 'ninestarki'` | `backend-test` に `env_file` がなく、デフォルトの `ninestarki` 資格情報を使用 | `docker-compose.dev.yml` に `env_file: ./backend/.env.development.backend` 追加 |
-| 2 | `Table 'ninestarki.zodiac_groups' doesn't exist` | `db_manage.py reset` がテーブル作成後に `commit()` せず、別コネクションの CSV ローダーからテーブルが見えない | `conn.commit()` をテーブル作成直後に追加 |
-| 3 | `SQLファイル 'mysql/init/xxx.sql' を見つけることができません` | `backend-test` コンテナ内の CWD は `/app` (= `./backend`)、だが SQL ファイルは `./mysql/init/` (リポジトリルート) にある | ボリュームマウント `./mysql/init:/app/mysql/init` 追加 |
+| # | 에러 메시지 | 원인 | 수정 |
+|---|------------|------|------|
+| 1 | `Access denied for user 'ninestarki'` | `backend-test`에 `env_file`이 없어 기본값 `ninestarki` 자격 증명 사용 | `docker-compose.dev.yml`에 `env_file: ./backend/.env.development.backend` 추가 |
+| 2 | `Table 'ninestarki.zodiac_groups' doesn't exist` | `db_manage.py reset`이 테이블 생성 후 `commit()` 안 함 → 별도 커넥션의 CSV 로더에서 테이블이 보이지 않음 | `conn.commit()`을 테이블 생성 직후에 추가 |
+| 3 | `SQL 파일 'mysql/init/xxx.sql'을 찾을 수 없습니다` | `backend-test` 컨테이너 내 CWD는 `/app` (= `./backend`), 하지만 SQL 파일은 `./mysql/init/` (리포지토리 루트)에 위치 | 볼륨 마운트 `./mysql/init:/app/mysql/init` 추가 |
 
-**最終的な `docker-compose.dev.yml` の `backend-test` 修正:**
+**최종 `docker-compose.dev.yml`의 `backend-test` 수정 내용:**
 ```yaml
 backend-test:
   user: root
   volumes:
     - ./backend:/app
-    - ./mysql/init:/app/mysql/init      # SQL seed scripts
-    - ./backend/data:/var/lib/mysql-files  # CSV files for LOAD DATA INFILE
+    - ./mysql/init:/app/mysql/init      # SQL 시드 스크립트
+    - ./backend/data:/var/lib/mysql-files  # CSV 파일 (LOAD DATA INFILE용)
   env_file:
     - ./backend/.env.development.backend
   environment:
@@ -151,26 +151,26 @@ backend-test:
 
 ---
 
-## データシーディング パイプライン
+## 데이터 시딩 파이프라인
 
-統合テスト実行時、以下の順序でデータが投入されます：
+통합 테스트 실행 시, 아래 순서로 데이터가 투입됩니다:
 
 ```mermaid
 graph TD
-    A[MySQL コンテナ起動] -->|docker-entrypoint-initdb.d| B[000_create_tables.sql<br/>テーブル作成]
-    B --> C[001_create_users.sql<br/>権限設定]
-    C --> D[100_stars.sql ~ 900_system_data.sql<br/>SQL INSERT データ]
+    A[MySQL 컨테이너 기동] -->|docker-entrypoint-initdb.d| B[000_create_tables.sql<br/>테이블 생성]
+    B --> C[001_create_users.sql<br/>권한 설정]
+    C --> D[100_stars.sql ~ 900_system_data.sql<br/>SQL INSERT 데이터]
     D --> E[make db-seed]
-    E -->|db_manage.py reset| F[テーブル DROP & 再作成]
-    F -->|conn.commit| G[SQL ファイルで INSERT]
+    E -->|db_manage.py reset| F[테이블 DROP & 재생성]
+    F -->|conn.commit| G[SQL 파일로 INSERT]
     G --> H[load_all_csv_data<br/>CSV LOAD DATA INFILE]
-    H --> I[create_superuser<br/>スーパーユーザー作成]
-    I --> J[統合テスト実行<br/>make test-integration]
+    H --> I[create_superuser<br/>슈퍼유저 생성]
+    I --> J[통합 테스트 실행<br/>make test-integration]
 ```
 
-### CSV でロードされるデータ
-| CSV ファイル | テーブル |
-|------------|---------|
+### CSV로 로드되는 데이터
+| CSV 파일 | 테이블 |
+|---------|--------|
 | `solar_terms_data.csv` | `solar_terms` |
 | `solar_starts_data.csv` | `solar_starts` |
 | `daily_astrology_data.csv` | `daily_astrology` |
@@ -179,48 +179,48 @@ graph TD
 | `zodiac_groups.csv` | `zodiac_groups` |
 | `zodiac_group_members.csv` | `zodiac_group_members` |
 | `hourly_star_zodiacs.csv` | `hourly_star_zodiacs` |
-| `compatibility_master_*.csv` (9件) | `compatibility_master` |
-| その他 | `star_compatibility_matrix`, `compatibility_readings_master` 等 |
+| `compatibility_master_*.csv` (9건) | `compatibility_master` |
+| 기타 | `star_compatibility_matrix`, `compatibility_readings_master` 등 |
 
 ---
 
-## 使用方法
+## 사용법
 
-### ローカルでの実行
+### 로컬 실행
 
 ```bash
-# 全テスト実行
+# 전체 테스트 실행
 make test
 
-# 単体テストのみ
+# 단위 테스트만
 make test-unit
 
-# 統合テストのみ (事前に make up ENV=dev でDBを起動)
+# 통합 테스트만 (사전에 make up ENV=dev 로 DB 기동 필요)
 make test-integration
 
-# DB データを完全にリセット＆再投入
+# DB 데이터 완전 리셋 & 재투입
 make db-seed
 ```
 
-### GitHub Actions での実行
+### GitHub Actions 실행
 
-| 操作 | 方法 |
+| 작업 | 방법 |
 |------|------|
-| 単体テスト | `main` への Push / PR で自動実行 |
-| 統合テスト | GitHub → Actions → "Integration Tests (Manual)" → "Run workflow" → ブランチ選択 → Run |
-| 特定テスト | `test_path` に `tests/golden_master/test_year_star.py` 等を入力 |
+| 단위 테스트 | `main`에 Push / PR 시 자동 실행 |
+| 통합 테스트 | GitHub → Actions → "Integration Tests (Manual)" → "Run workflow" → 브랜치 선택 → Run |
+| 특정 테스트 | `test_path`에 `tests/golden_master/test_year_star.py` 등을 입력 |
 
 ---
 
-## 関連ファイル
+## 관련 파일
 
-| ファイル | 役割 |
-|---------|------|
-| `.github/workflows/ci.yml` | 自動 CI (単体テストのみ) |
-| `.github/workflows/integration-test.yml` | 手動統合テスト |
-| `Makefile` | `test`, `test-unit`, `test-integration`, `db-seed` ターゲット |
-| `docker-compose.dev.yml` | `backend-test` サービス定義 |
-| `backend/db_manage.py` | `init` (スーパーユーザーのみ) / `reset` (全データ再投入) |
-| `backend/scripts/csv_file_loader.py` | CSV データローダー |
-| `mysql/init/*.sql` | MySQL 初期化スクリプト |
-| `backend/core/db_config.py` | DB 接続情報管理 (`DATABASE_URL` 優先) |
+| 파일 | 역할 |
+|------|------|
+| `.github/workflows/ci.yml` | 자동 CI (단위 테스트만) |
+| `.github/workflows/integration-test.yml` | 수동 통합 테스트 |
+| `Makefile` | `test`, `test-unit`, `test-integration`, `db-seed` 타겟 |
+| `docker-compose.dev.yml` | `backend-test` 서비스 정의 |
+| `backend/db_manage.py` | `init` (슈퍼유저만) / `reset` (전체 데이터 재투입) |
+| `backend/scripts/csv_file_loader.py` | CSV 데이터 로더 |
+| `mysql/init/*.sql` | MySQL 초기화 스크립트 |
+| `backend/core/db_config.py` | DB 접속 정보 관리 (`DATABASE_URL` 우선) |
