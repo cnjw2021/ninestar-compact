@@ -150,7 +150,7 @@ const ResultFortuneSection: React.FC<ResultFortuneSectionProps> = ({ mainStar, m
   return (
     <Stack gap="xl">
       {/* 3年分の時の運気情報表示 */}
-      {birthdayInfo && (
+      {/* {birthdayInfo && (
         <Paper shadow="sm" p="md" withBorder>
           <Stack gap="md">
             <Title order={3}>{targetYear ?? new Date().getFullYear()}〜{(targetYear ?? new Date().getFullYear()) + 2} 年の運気</Title>
@@ -186,7 +186,7 @@ const ResultFortuneSection: React.FC<ResultFortuneSectionProps> = ({ mainStar, m
             </Box>
           </Stack>
         </Paper>
-      )}
+      )} */}
 
       {/* 月の運気情報表示 */}
       {/* {monthStarData?.annual_directions && (

@@ -1,47 +1,117 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>九星気学レポート</title>
-    
+
     <!-- 共通スタイルシートの読み込み（PDFビルド用） -->
     <link rel="stylesheet" href="{{ static_base_url }}/css/fortune_styles.css">
-    
+
     <!-- プレビュー用にCSSをインラインで埋め込み -->
     {% if css_content %}
     <style id="fortune-styles">
-        {{ css_content|safe }}
+        {
+                {
+                css_content|safe
+            }
+        }
     </style>
     {% endif %}
-    
+
     <style>
         :root {
+
             /* プライマリーカラーとセカンダリーカラー */
-            --primary-color: {{ style.primary_color }};
-            --secondary-color: {{ style.love_color }};
+            --primary-color: {
+                    {
+                    style.primary_color
+                }
+            }
+
+            ;
+
+            --secondary-color: {
+                    {
+                    style.love_color
+                }
+            }
+
+            ;
             --report-bg-image: url('{{ image_path }}');
-            
+
             /* セカンダリーカラーをベースにした5つのカラーバリエーション */
-            --base-color: {{ style.love_color }};
-            --complement-color: color-mix(in hsl, {{ style.love_color }}, white 20%);
-            --accent-color: color-mix(in hsl, {{ style.love_color }}, white 40% hue 30deg);
-            --soft-color: color-mix(in hsl, {{ style.love_color }}, white 60% hue -30deg);
-            --light-color: color-mix(in hsl, {{ style.love_color }}, white 80%);
-            
-            /* セクション用のグラデーション背景色 */
-            --section-gradient-1: {{ style.gradient_start }};
-            --section-gradient-2: {{ style.gradient_end }};
-            
-            /* コンテンツ用の補助カラー */
-            --content-color-1: rgba(255, 255, 255, 0.95);  /* 純白に近い */
-            --content-color-2: rgba(255, 255, 255, 0.85);  /* やや透明な白 */
-            --content-color-3: rgba(0, 0, 0, 0.05);        /* 微かな影 */
-            --content-color-4: rgba(0, 0, 0, 0.02);        /* より微かな影 */
-            
-            /* テキストカラー */
-            --text-color: #333333;
-            --text-color-light: rgba(51, 51, 51, 0.8);
+            --base-color: {
+                    {
+                    style.love_color
+                }
+            }
+
+            ;
+
+            --complement-color: color-mix(in hsl, {
+                    {
+                    style.love_color
+                }
+            }
+
+            , white 20%);
+
+        --accent-color: color-mix(in hsl, {
+                {
+                style.love_color
+            }
+        }
+
+        , white 40% hue 30deg);
+
+        --soft-color: color-mix(in hsl, {
+                {
+                style.love_color
+            }
+        }
+
+        , white 60% hue -30deg);
+
+        --light-color: color-mix(in hsl, {
+                {
+                style.love_color
+            }
+        }
+
+        , white 80%);
+
+        /* セクション用のグラデーション背景色 */
+        --section-gradient-1: {
+                {
+                style.gradient_start
+            }
+        }
+
+        ;
+
+        --section-gradient-2: {
+                {
+                style.gradient_end
+            }
+        }
+
+        ;
+
+        /* コンテンツ用の補助カラー */
+        --content-color-1: rgba(255, 255, 255, 0.95);
+        /* 純白に近い */
+        --content-color-2: rgba(255, 255, 255, 0.85);
+        /* やや透明な白 */
+        --content-color-3: rgba(0, 0, 0, 0.05);
+        /* 微かな影 */
+        --content-color-4: rgba(0, 0, 0, 0.02);
+        /* より微かな影 */
+
+        /* テキストカラー */
+        --text-color: #333333;
+        --text-color-light: rgba(51, 51, 51, 0.8);
         }
 
         @page {
@@ -49,8 +119,9 @@
             margin: 0;
             padding: 0;
         }
-        
-        html, body {
+
+        html,
+        body {
             margin: 0;
             padding: 0;
             width: 210mm;
@@ -61,7 +132,7 @@
             background-color: white;
             color: var(--text-color);
         }
-        
+
         .page {
             position: relative;
             width: 210mm;
@@ -95,7 +166,14 @@
             height: 100%;
             background-image: linear-gradient(to top, var(--section-gradient-1), var(--section-gradient-2));
             z-index: 1;
-            opacity: {{ style.image_opacity|default(0.7) }};
+
+            opacity: {
+                    {
+                    style.image_opacity|default(0.7)
+                }
+            }
+
+            ;
         }
 
         .content {
@@ -115,7 +193,14 @@
         h1 {
             font-size: 24px;
             font-weight: 500;
-            color: {{ style.primary_color }};
+
+            color: {
+                    {
+                    style.primary_color
+                }
+            }
+
+            ;
             text-align: center;
             margin-bottom: 1.2rem;
             letter-spacing: 0.1em;
@@ -140,7 +225,14 @@
             transform: translateX(-50%);
             width: 100px;
             height: 1px;
-            background-color: {{ style.primary_color }};
+
+            background-color: {
+                    {
+                    style.primary_color
+                }
+            }
+
+            ;
         }
 
         .numerology-number {
@@ -157,18 +249,18 @@
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
             opacity: 0.95;
         }
-        
+
         .numerology-number:hover {
             opacity: 1;
             box-shadow: 0 3px 12px var(--content-color-3);
             transition: all 0.2s ease;
         }
-        
+
         @media print {
             body {
                 background-color: white;
             }
-            
+
             .page {
                 margin: 0;
                 padding: 0;
@@ -176,6 +268,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- ヘッダーページ -->
     <div class="page">
@@ -184,7 +277,7 @@
             {% include 'ninestarkey_report/sections/header.html' %}
         </div>
     </div>
-    
+
     <!-- 導入ページ -->
     <div class="page">
         <div class="background"></div>
@@ -193,7 +286,7 @@
             {% include 'ninestarkey_report/sections/introduction.html' %}
         </div>
     </div>
-    
+
     <!-- 本命星ページ -->
     <div class="page">
         <div class="background"></div>
@@ -248,21 +341,17 @@
         </div>
     </div>
 
-    <!-- 五行相関図ページ -->
-    <!-- 五行相関図セクションは2つの独立したページを生成します -->
-    {% include 'ninestarkey_report/sections/five_elements.html' %}
-
     <!-- 本命星属性ページ -->
     <div class="page">
         <div class="background"></div>
         <div class="gradient-overlay"></div>
         <div class="content">
             {% with star_name=main_star_attributes.star_name, attributes=main_star_attributes.attributes %}
-                {% include 'ninestarkey_report/sections/star_attributes.html' %}
+            {% include 'ninestarkey_report/sections/star_attributes.html' %}
             {% endwith %}
         </div>
     </div>
-    
+
     <!-- 適職セクション -->
     <div class="page">
         <div class="background"></div>
@@ -272,20 +361,6 @@
         </div>
     </div>
 
-    <!-- 年の運気ページ -->
-    <div class="page">
-        <div class="background"></div>
-        <div class="gradient-overlay"></div>
-        <div class="content">
-            {% include 'ninestarkey_report/sections/yearly_fortune.html' %}
-        </div>
-    </div>
-
-    <!-- 月の運気ページ -->
-    <!-- 月の運気セクションは特殊な構造となっていて、自身で4つの独立したページを生成します。 -->
-    <!-- そのため、ここでは月の運気セクションのページを直接インクルードします。 -->
-    {% include 'ninestarkey_report/sections/monthly_fortune.html' %}
-    
     <!-- 場所の運気ページ -->
     <div class="page">
         <div class="background"></div>
@@ -294,26 +369,7 @@
             {% include 'ninestarkey_report/sections/direction_fortune.html' %}
         </div>
     </div>
-    
-    <!-- 方位サイト案内ページ -->
-    <div class="page">
-        <div class="background"></div>
-        <div class="gradient-overlay"></div>
-        <div class="content">
-            {% include 'ninestarkey_report/sections/direction_app_site.html' %}
-        </div>
-    </div>
-    
-    <!-- 相性鑑定結果ページ -->
-    {% if compatibility and compatibility.readings %}
-    <div class="page">
-        <div class="background"></div>
-        <div class="gradient-overlay"></div>
-        <div class="content">
-            {% include 'ninestarkey_report/sections/compatibility_results.html' %}
-        </div>
-    </div>
-    {% endif %}
 
 </body>
-</html> 
+
+</html>
