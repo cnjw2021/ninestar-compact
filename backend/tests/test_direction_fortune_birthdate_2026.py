@@ -1,7 +1,7 @@
 import requests
 
 
-BASE_URL = "http://backend-container:5001"
+BASE_URL = "http://backend:5001"
 
 
 def _get_main_month_stars(birth_datetime: str, target_year: int) -> tuple[int, int]:

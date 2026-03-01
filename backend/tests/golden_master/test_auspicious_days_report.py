@@ -4,7 +4,7 @@ import json
 import os
 
 # API 서버의 기본 URL
-BASE_URL = "http://backend-container:5001"
+BASE_URL = "http://backend:5001"
 YEAR = 2025
 YEAR_2026 = 2026
 
