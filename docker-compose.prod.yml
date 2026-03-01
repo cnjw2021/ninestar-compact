@@ -71,6 +71,8 @@ services:
     image: mysql:8.0
     container_name: mysql-container
     restart: always
+    env_file:
+      - ./.env.production.backend
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME:-ninestarki}
