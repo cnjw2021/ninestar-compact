@@ -46,6 +46,8 @@ echo ""
 # --------------------------------------------------
 echo -e "${YELLOW}0. 기존 컨테이너 중지 중...${NC}"
 docker compose -f ${COMPOSE_FILE} down
+# 이전의 init-ssl.sh 실행 중 중단으로 인해 남아있는 임시 Nginx 컨테이너도 강제 종료 처리
+docker rm -f nginx-temp >/dev/null 2>&1 || true
 echo ""
 
 # --------------------------------------------------
