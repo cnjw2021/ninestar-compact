@@ -95,6 +95,8 @@ services:
       target: development # pytestがインストールされたdevelopmentステージを使用
     volumes:
       - ./backend:/app
+      - ./mysql/init:/app/mysql/init      # SQL seed scripts for db_manage.py reset
+      - ./backend/data:/var/lib/mysql-files  # CSV files for LOAD DATA INFILE
     env_file:
       - ./backend/.env.development.backend
     environment:
