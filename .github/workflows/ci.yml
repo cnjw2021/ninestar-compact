@@ -38,6 +38,14 @@ jobs:
           touch frontend/.env.production.frontend
           touch frontend/.env.development.frontend
           touch backend/.env.production.backend
+          cat <<EOF > backend/.env.development.backend
+          DB_ROOT_PASSWORD=${{ env.DB_ROOT_PASSWORD }}
+          DB_NAME=${{ env.DB_NAME }}
+          DB_USER=${{ env.DB_USER }}
+          DB_PASSWORD=${{ env.DB_PASSWORD }}
+          DB_HOST=mysql
+          DB_PORT=3306
+          EOF
           mkdir -p backend/logs backend/.pytest_cache
           chmod -R 777 backend/logs backend/.pytest_cache
 
