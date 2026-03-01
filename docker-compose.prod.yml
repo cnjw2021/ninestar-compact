@@ -31,6 +31,7 @@ services:
       - backend_logs:/app/logs:rw
       - pdf_tmp:/tmp/pdf
       - ./mysql/init:/app/mysql/init:ro
+      - ./backend/data/csv:/app/data/csv:ro
     env_file:
       - ./.env.production.backend
     environment:
