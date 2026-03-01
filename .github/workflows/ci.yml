@@ -37,7 +37,10 @@ jobs:
         run: |
           touch frontend/.env.production.frontend
           touch frontend/.env.development.frontend
-          touch backend/.env.production.backend
+          
+          # IMPORTANT: Truncate (not touch!) production env to prevent its
+          # DATABASE_URL from overriding CI test credentials
+          > backend/.env.production.backend
 
           # Root .env for docker-compose variable interpolation (mysql container)
           echo "DB_ROOT_PASSWORD=$DB_ROOT_PASSWORD" > .env
@@ -47,8 +50,20 @@ jobs:
           echo "DB_HOST=mysql" >> .env
           echo "DB_PORT=3306" >> .env
 
-          # Backend .env for Python app (SQLAlchemy connection)
-          cp .env backend/.env.development.backend
+          # Backend .env for Python app (must include DATABASE_URL + app secrets)
+          echo "SECRET_KEY=testsecretkey" > backend/.env.development.backend
+          echo "JWT_SECRET_KEY=testjwtsecretkey" >> backend/.env.development.backend
+          # Append DB vars (needs shell expansion)
+          echo "DB_USER=$DB_USER" >> backend/.env.development.backend
+          echo "DB_PASSWORD=$DB_PASSWORD" >> backend/.env.development.backend
+          echo "DB_HOST=mysql" >> backend/.env.development.backend
+          echo "DB_NAME=$DB_NAME" >> backend/.env.development.backend
+          echo "DB_PORT=3306" >> backend/.env.development.backend
+          echo "DB_ROOT_USER=root" >> backend/.env.development.backend
+          echo "DB_ROOT_PASSWORD=$DB_ROOT_PASSWORD" >> backend/.env.development.backend
+          echo "DATABASE_URL=mysql+pymysql://${DB_USER}:${DB_PASSWORD}@mysql:3306/${DB_NAME}?charset=utf8mb4" >> backend/.env.development.backend
+          echo "SUPERUSER_EMAIL=superuser" >> backend/.env.development.backend
+          echo "SUPERUSER_PASSWORD=$DB_PASSWORD" >> backend/.env.development.backend
 
           echo "--- Generated .env ---"
           cat .env
