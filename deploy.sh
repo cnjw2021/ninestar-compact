@@ -107,11 +107,8 @@ echo ""
 # --------------------------------------------------
 echo -e "${YELLOW}1.5. 백엔드 이미지에서 CSV 데이터를 추출하여 호스트에 복사합니다...${NC}"
 mkdir -p ./backend/data/csv
-# 기존 데이터 삭제 후 새로 복사 (찌꺼기 방지)
-rm -rf ./backend/data/csv/*
-docker create --name backend-data-extractor ${REGISTRY}-backend:latest >/dev/null
-docker cp backend-data-extractor:/app/data/csv/. ./backend/data/csv/
-docker rm backend-data-extractor >/dev/null
+# 기존 권한(mysql이 소유) 문제 방지를 위해 컨테이너를 root로 실행하여 덮어쓰기
+docker run --rm --user root -v "$(pwd)/backend/data/csv:/host_csv" ${REGISTRY}-backend:latest sh -c "rm -rf /host_csv/* && cp -a /app/data/csv/. /host_csv/ && chown -R 999:999 /host_csv && chmod -R 755 /host_csv"
 echo -e "${GREEN}   ✅ CSV 데이터 복사 완료${NC}"
 echo ""
 
