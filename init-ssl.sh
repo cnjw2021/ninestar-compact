@@ -1,18 +1,29 @@
 #!/bin/bash
 
-# --- 設定値 (ユーザー環境に合わせて修正) ---
-domains=(lucia9star.com www.lucia9star.com)
-email="aussie9804@yahoo.co.jp" # Let's Encrypt アカウント用のメールアドレス
-# --- 設定値 終了 ---
+# ==============================================================================
+# SSL 인증서 초기 발급 스크립트 (최초 1회만 실행)
+# ==============================================================================
+# Let's Encrypt SSL 인증서를 발급합니다.
+# 이미 인증서가 존재하는 경우 이 스크립트를 실행할 필요가 없습니다.
+#
+# 사전 요구사항:
+#   - 도메인의 DNS A 레코드가 이 서버 IP를 가리키고 있어야 합니다
+#   - 80 포트가 열려 있어야 합니다
+# ==============================================================================
 
-# スクリプト実行中にエラーが発生した場合は、即座に終了します。
+# --- 설정값 (환경에 맞게 수정) ---
+domains=(831shop.site www.831shop.site)
+email="hopstepjump1015@gmail.com"   # Let's Encrypt 알림 수신 이메일
+COMPOSE_FILE="docker-compose.prod.yml"
+# --- 설정값 끝 ---
+
 set -e
 
-echo "### 必要なディレクトリを作成しています... ###"
+echo "### 필요한 디렉토리를 생성합니다... ###"
 mkdir -p ./certbot/conf ./certbot/www
 
-echo "### 一時的な Nginx 設定ファイルを作成しています... ###"
-# SSL 設定がない一時的な Nginxのための設定ファイルを作成
+echo "### 임시 Nginx 설정 파일을 생성합니다... ###"
+# SSL 설정 없이 80 포트만 열어 certbot 인증에 사용
 cat > ./certbot/conf/default.conf <<EOF
 events {
     worker_connections 1024;
@@ -27,40 +38,33 @@ http {
         }
 
         location / {
-            return 200 'Temp server for SSL cert generation. Please wait...';
+            return 200 'SSL 인증서 발급 대기 중...';
         }
     }
 }
 EOF
 
-echo "### 一時的な Nginx コンテナをバックグラウンドで実行しています... ###"
-# docker-compose.ymlを使用しながら、一時的な設定ファイルをマウントして nginx 実行
-# 💡 [最終修正] -v オプションを追加して、一時的な設定ファイルが含まれるディレクトリをコンテナにマウントします。
-# 💡 [修正] -d (detached) オプションでバックグラウンド実行, --name で識別可能な名前を指定
-# 💡 [最終修正] --service-ports オプションを追加して、80番ポートを外部に公開します。
-docker compose run --rm -d --name nginx-temp --service-ports \
+echo "### 임시 Nginx 컨테이너를 백그라운드로 실행합니다... ###"
+docker compose -f ${COMPOSE_FILE} run --rm -d --name nginx-temp --service-ports \
   -v "$(pwd)/certbot/conf:/etc/nginx/conf.d" \
   -v "$(pwd)/certbot/www:/var/www/certbot" \
   --entrypoint "\
   nginx -g 'daemon off;' -c /etc/nginx/conf.d/default.conf" nginx
 
-echo "### SSL 証明書の発行をリクエストしています... ###"
-# certbot コンテナを実行して証明書を発行
-# --webroot 方式と一時的な Nginxが共有するボリュームを使用
-docker compose run --rm certbot certonly --webroot --webroot-path=/var/www/certbot \
+echo "### SSL 인증서 발급을 요청합니다... ###"
+docker compose -f ${COMPOSE_FILE} run --rm certbot certonly --webroot --webroot-path=/var/www/certbot \
     --email $email \
     --agree-tos \
     --no-eff-email \
     -d ${domains[0]} -d ${domains[1]}
 
-echo "### 一時的な Nginx コンテナを停止しています... ###"
-# 💡 [追加] 名前で指定して一時的なコンテナを確実に停止
+echo "### 임시 Nginx 컨테이너를 중지합니다... ###"
 docker stop nginx-temp
 
-echo "### 一時的な Nginx 設定ファイルを削除しています... ###"
+echo "### 임시 Nginx 설정 파일을 삭제합니다... ###"
 rm ./certbot/conf/default.conf
 
-echo "### SSL セキュリティオプションファイルを作成しています... ###"
+echo "### SSL 보안 옵션 파일을 생성합니다... ###"
 mkdir -p ./certbot/conf
 cat > ./certbot/conf/options-ssl-nginx.conf <<EOF
 ssl_session_cache shared:le_nginx_SSL:10m;
@@ -73,25 +77,19 @@ ssl_prefer_server_ciphers off;
 ssl_ciphers "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384";
 EOF
 
-# 💡 [追加] Diffie-Hellman パラメータファイルを作成します。 (セキュリティ強化)
-echo "### Diffie-Hellman パラメータファイルを作成しています... ###"
+echo "### Diffie-Hellman 파라미터 파일을 생성합니다... ###"
 if [ ! -f "./certbot/conf/ssl-dhparams.pem" ]; then
   openssl dhparam -out ./certbot/conf/ssl-dhparams.pem 2048
 fi
 
-# 💡 [自動化追加] Crontab 自動更新登録
-echo "### Crontabに自動更新タスクを登録しています... ###"
-# プロジェクトの絶対パスを取得
+# Crontab에 인증서 자동 갱신 등록 (매일 02:30)
+echo "### Crontab에 자동 갱신 작업을 등록합니다... ###"
 PROJECT_PATH=$(pwd)
-# 登録する cron コマンドを定義
-CRON_COMMAND="/usr/bin/docker compose -f $PROJECT_PATH/docker-compose.yml run --rm certbot renew && /usr/bin/docker compose -f $PROJECT_PATH/docker-compose.yml exec nginx nginx -s reload"
-# cron タスクの内容を定義 (毎日 2:30)
+CRON_COMMAND="/usr/bin/docker compose -f $PROJECT_PATH/${COMPOSE_FILE} run --rm certbot renew && /usr/bin/docker compose -f $PROJECT_PATH/${COMPOSE_FILE} exec nginx nginx -s reload"
 CRON_JOB="30 2 * * * $CRON_COMMAND"
 
-# 現在の crontab に同じコマンドがあるかどうかを確認
 (crontab -l 2>/dev/null | grep -Fq "$CRON_COMMAND") || \
 ( (crontab -l 2>/dev/null; echo "$CRON_JOB") | crontab - && \
-echo "成功: Crontabに自動更新タスクが追加されました。" )
-# 💡 [ここまで追加] ###
+echo "성공: Crontab에 자동 갱신 작업이 추가되었습니다." )
 
-echo "### 自動化スクリプトが完了しました! ###"
+echo "### SSL 초기 설정이 완료되었습니다! ###"

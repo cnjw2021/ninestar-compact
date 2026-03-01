@@ -47,6 +47,16 @@ docker-compose up -d
 http://localhost:3000
 ```
 
+## 배포 (デプロイ)
+
+프로덕션 서버(ConoHa)에 배포할 때는 `deploy.sh` 스크립트를 사용합니다:
+
+```bash
+./deploy.sh
+```
+
+> 📖 서버 필수 파일, 환경변수 설정, 트러블슈팅 등 상세한 내용은 [프로덕션 배포 가이드](docs/deployment-guide.md)를 참조하세요.
+
 ## 開発
 
 ### バックエンド開発

@@ -77,7 +77,7 @@ def create_app() -> Flask:
     # CORS 설정
     CORS(app, 
          resources={r"/*": {
-             "origins": ["http://localhost:3000", "http://localhost", "http://localhost:80"],
+             "origins": ["http://localhost:3000", "http://localhost", "http://localhost:80", "https://831shop.site", "https://www.831shop.site"],
              "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
              "allow_headers": ["Content-Type", "Authorization"],
              "supports_credentials": True,
