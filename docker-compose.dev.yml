@@ -32,6 +32,7 @@ services:
       sh -c "python /app/wait_for_db.py && 
              python /app/db_manage.py init &&
              chown -R appuser:appgroup /tmp/pdf &&
+             chown -R appuser:appgroup /app/logs &&
              exec gunicorn --bind 0.0.0.0:5001 --reload --user appuser --group appgroup 'app:app'"
     depends_on:
       - mysql
