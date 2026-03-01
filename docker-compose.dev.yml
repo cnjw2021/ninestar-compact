@@ -87,6 +87,7 @@ services:
 
   # --- テスト 専用 サービス ---
   backend-test:
+    user: root
     build:
       context: ./backend
       dockerfile: Dockerfile
