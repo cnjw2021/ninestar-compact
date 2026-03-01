@@ -95,10 +95,12 @@ services:
       target: development # pytestがインストールされたdevelopmentステージを使用
     volumes:
       - ./backend:/app
+      - ./mysql/init:/app/mysql/init      # SQL seed scripts for db_manage.py reset
+      - ./backend/data:/var/lib/mysql-files  # CSV files for LOAD DATA INFILE
+    env_file:
+      - ./backend/.env.development.backend
     environment:
       - PYTHONPATH=/app
-      # テスト用DBを分離したい場合は、nv_fileを使用(例：Userを作成して削除するテスト)
-      # env_file: ./backend/.env.test.backend 
     depends_on:
       backend:
         condition: service_healthy

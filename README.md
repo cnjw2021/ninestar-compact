@@ -61,6 +61,20 @@ cd frontend
 # 開発用コマンド
 ```
 
+## テスト
+
+```bash
+make test              # 全テスト実行（単体 + 統合）
+make test-unit         # 単体テストのみ（DB 不要）
+make test-integration  # 統合テストのみ（DB + バックエンド必須）
+make db-seed           # DB を完全リセット＆再投入
+```
+
+- **CI:** `main` への Push / PR で単体テストが自動実行されます。
+- **統合テスト:** GitHub Actions の "Integration Tests (Manual)" ワークフローから手動実行できます。
+
+> 📖 テスト分離の経緯、データシーディングパイプライン、トラブルシューティングの詳細は [CI テスト アーキテクチャ](docs/ci-test-architecture.md) を参照してください。
+
 ## ライセンス
 
 このプロジェクトは [MIT ライセンス](LICENSE) の下で公開されています。

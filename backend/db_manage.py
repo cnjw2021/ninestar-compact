@@ -133,6 +133,7 @@ def run_reset():
 
     # テーブル 再作成 及び データ シード (MySQL initdb.dと同じロジックを実行)
     execute_sql_file(cursor, os.path.join('mysql', 'init', '000_create_tables.sql'))
+    conn.commit()  # CSV loader uses a separate connection, so tables must be committed first
     seed_database(cursor) # SQL 及び CSV データ
     
     conn.commit()
