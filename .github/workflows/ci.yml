@@ -43,9 +43,6 @@ jobs:
 
       - name: Run Backend Tests
         run: |
-          ls -la backend/
-          docker compose -f docker-compose.yml -f docker-compose.dev.yml run --rm backend-test whoami
-          docker compose -f docker-compose.yml -f docker-compose.dev.yml run --rm backend-test ls -la /app
           make test
 
       # GHCR은 소문자 레포지토리 이름만 허용하므로 소문자로 변환
