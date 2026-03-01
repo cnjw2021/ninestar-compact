@@ -1,30 +1,72 @@
-name: CI Build and Test
+name: Docker Build and Push to GHCR
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-and-test:
+  build-test-and-push:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
     steps:
-      - name: Checkout Code
+      # 1. GitHub 저장소의 코드를 가져옴
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
+      # 2. 테스트 환경 준비 및 실행
       - name: Prepare mock environment files
         run: |
           touch frontend/.env.production.frontend
           touch frontend/.env.development.frontend
-
-      - name: Build Docker containers
-        run: docker compose build
+          touch backend/.env.production.backend
+          touch backend/.env.development.backend
 
       - name: Run Backend Tests
         run: make test
+
+      # GHCR은 소문자 레포지토리 이름만 허용하므로 소문자로 변환
+      - name: Convert image name to lowercase
+        run: echo "IMAGE_NAME=$(echo ${{ env.IMAGE_NAME }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      # 3. GHCR (GitHub Container Registry) 에 로그인
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.CR_PAT }} # 사용자가 등록한 시크릿 토큰 사용
+
+      # Docker buildx 설정
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 4. 각 서비스별 Docker 이미지 빌드 및 GHCR에 Push
+      - name: Build and push Frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:latest
+
+      - name: Build and push Backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:latest
+
+      - name: Build and push Nginx image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./nginx
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-nginx:latest
