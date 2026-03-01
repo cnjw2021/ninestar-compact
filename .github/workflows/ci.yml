@@ -43,7 +43,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.CR_PAT }} # 사용자가 등록한 시크릿 토큰 사용
+          password: ${{ secrets.GITHUB_TOKEN }} # 기본 GITHUB_TOKEN 사용
 
       # Docker buildx 설정
       - name: Set up Docker Buildx
