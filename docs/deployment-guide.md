@@ -93,7 +93,10 @@ NRIA_LICENSE_KEY=<라이선스 키>          # New Relic 인프라 모니터링 
 
 #### `.env.production.frontend`
 ```env
+# 本番環境設定
 NEXT_PUBLIC_API_URL=https://<도메인>/api   # 클라이언트에서 호출하는 API 엔드포인트 (NEXT_PUBLIC_ 접두사 필수)
+NEXT_PUBLIC_BASE_URL=https://<도메인>      # OG 태그, 외부 공유 링크 등의 Base URL로 사용
+NODE_ENV=production                        # 빌드/실행 환경 명시
 ```
 
 ---
