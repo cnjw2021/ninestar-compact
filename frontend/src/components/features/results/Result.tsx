@@ -55,12 +55,12 @@ export default function Result({ resultData, onReset, compatibilityData }: Resul
   const [showTemplateModal, setShowTemplateModal] = useState<boolean>(false);
   const [localCompatibilityData, setLocalCompatibilityData] = useState<CompatibilityData | null>(null);
   const [browserType, setBrowserType] = useState<'safari' | 'chrome' | 'other'>('other');
-  
+
   // Zustandストアから日命星と月命星読みデータを保存・取得するための関数を取得
-  const { 
+  const {
     setMonthlyStarReading: storeMonthlyStarReading,
     monthlyStarReading: storedMonthlyStarReading,
-    setDailyStarReading: storeDailyStarReading, 
+    setDailyStarReading: storeDailyStarReading,
     dailyStarReading: storedDailyStarReading
   } = useNineStarKiStore();
 
@@ -222,15 +222,15 @@ export default function Result({ resultData, onReset, compatibilityData }: Resul
   const handlePreviewReport = async (templateId: number) => {
     // ブラウザタイプに応じてsimpleディレクトリを使用するかを決定
     const useSimple = browserType === 'safari';
-    
+
     try {
       setIsGeneratingPdf(true);
 
 
-      
+
       // finalCompatibilityDataが存在するかチェック
       const compatibilityResult = compatibilityData?.result || localCompatibilityData?.result;
-      
+
       // デバッグログ
       console.log('プレビュー - 相性鑑定データ状態:', {
         'propsからのデータ': compatibilityData ? true : false,
@@ -253,16 +253,16 @@ export default function Result({ resultData, onReset, compatibilityData }: Resul
       };
 
       // プレビューエンドポイントを呼び出し
-      const response = await api.post('/nine-star/preview-report', 
-        { 
+      const response = await api.post('/nine-star/preview-report',
+        {
           resultData: resultDataWithReadings,
           templateId: templateId,
           backgroundId: templateId, // 背景IDはテンプレートIDと同じ値を使用
           useSimple: useSimple // simpleディレクトリのSVGを使うかどうか
-        }, 
+        },
         { responseType: 'text' }
       );
-      
+
       // 新しいタブでHTMLコンテンツを開く
       const newWindow = window.open('', '_blank');
       if (newWindow) {
@@ -271,7 +271,7 @@ export default function Result({ resultData, onReset, compatibilityData }: Resul
       } else {
         alert('プレビューを表示できません。ポップアップがブロックされている可能性があります。');
       }
-      
+
       setShowTemplateModal(false);
     } catch (error) {
       console.error('プレビュー表示中にエラーが発生しました:', error);
@@ -339,11 +339,11 @@ export default function Result({ resultData, onReset, compatibilityData }: Resul
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* 進捗バーはモーダル内オーバーレイで表示。ページ先頭のバーは不要 */}
-      <div style={{ 
-        padding: '20px', 
-        backgroundColor: 'white', 
-        borderRadius: '8px', 
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)', 
+      <div style={{
+        padding: '20px',
+        backgroundColor: 'white',
+        borderRadius: '8px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
         border: '1px solid #e0e0e0'
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -353,7 +353,7 @@ export default function Result({ resultData, onReset, compatibilityData }: Resul
           <p style={{ textAlign: 'center', color: '#666', margin: 0 }}>
             生年月日: {birthdate}
           </p>
-          
+
           {/* 九星の数字表示セクション */}
           <div style={{ margin: '20px 0' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
@@ -369,9 +369,9 @@ export default function Result({ resultData, onReset, compatibilityData }: Resul
               }}>
                 <p style={{ fontSize: '0.75rem', fontWeight: 600, color: '#666', margin: '0 0 5px 0' }}>本命星</p>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '2px' }}>
-                  <span style={{ 
-                    fontSize: '2.2rem', 
-                    fontWeight: 800, 
+                  <span style={{
+                    fontSize: '2.2rem',
+                    fontWeight: 800,
                     color: getStarColor(main_star.star_number),
                     lineHeight: 1,
                     textShadow: '0px 2px 4px rgba(0,0,0,0.1)',
@@ -407,9 +407,9 @@ export default function Result({ resultData, onReset, compatibilityData }: Resul
               }}>
                 <p style={{ fontSize: '0.75rem', fontWeight: 600, color: '#666', margin: '0 0 5px 0' }}>月命星</p>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '2px' }}>
-                  <span style={{ 
-                    fontSize: '2.2rem', 
-                    fontWeight: 800, 
+                  <span style={{
+                    fontSize: '2.2rem',
+                    fontWeight: 800,
                     color: getStarColor(month_star.star_number),
                     lineHeight: 1,
                     textShadow: '0px 2px 4px rgba(0,0,0,0.1)',
@@ -445,9 +445,9 @@ export default function Result({ resultData, onReset, compatibilityData }: Resul
               }}>
                 <p style={{ fontSize: '0.75rem', fontWeight: 600, color: '#666', margin: '0 0 5px 0' }}>日命星</p>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '2px' }}>
-                  <span style={{ 
-                    fontSize: '2.2rem', 
-                    fontWeight: 800, 
+                  <span style={{
+                    fontSize: '2.2rem',
+                    fontWeight: 800,
                     color: getStarColor(day_star.star_number),
                     lineHeight: 1,
                     textShadow: '0px 2px 4px rgba(0,0,0,0.1)',
@@ -476,62 +476,62 @@ export default function Result({ resultData, onReset, compatibilityData }: Resul
       </div>
 
       {/* 本命星のSVGと説明文 */}
-      <MainStarWithInfo 
-        star={formatStarForInfo(main_star)} 
+      <MainStarWithInfo
+        star={formatStarForInfo(main_star)}
         title={`本命星\n（性格・運命の流れ）`}
       />
 
       {/* 月命星のSVGと説明文 */}
-      <MainStarWithInfo 
+      <MainStarWithInfo
         star={formatStarForInfo(month_star, monthStarReading ? {
           description: monthStarReading.description,
           keywords: monthStarReading.keywords,
           title: monthStarReading.title
-        } : undefined)} 
+        } : undefined)}
         title={`月命星\n（環境・対人関係）`}
         isMonthStar={true}
       />
 
       {/* 日命星のSVGと説明文 */}
-      <MainStarWithInfo 
+      <MainStarWithInfo
         star={formatStarForInfo(day_star, dailyStarReading ? {
           description: dailyStarReading.description,
           keywords: dailyStarReading.keywords || '',
           title: dailyStarReading.title,
           advice: dailyStarReading.advice || ''
-        } : undefined)} 
+        } : undefined)}
         title={`日命星\n（行動・思考パターン）`}
         isDayStar={true}
       />
 
       {/* 本命星の属性情報 */}
-      <StarAttributesDisplay 
+      <StarAttributesDisplay
         mainStar={main_star.star_number}
         mainStarName={main_star.name_jp}
       />
 
       {/* 五行相関図 */}
-      <FiveElementsCycle size={500} />
+      {/* <FiveElementsCycle size={500} /> */}
 
       {/* ほかのセクションの後、本命星と月命星のガイダンス情報（新規追加）*/}
-      <StarLifeGuidance 
+      <StarLifeGuidance
         mainStar={main_star.star_number}
         monthStar={month_star.star_number}
       />
 
       {/* 鑑定結果セクション */}
-      <ResultFortuneSection 
-        mainStar={main_star.star_number} 
-        monthStar={month_star.star_number} 
+      <ResultFortuneSection
+        mainStar={main_star.star_number}
+        monthStar={month_star.star_number}
         targetYear={resultData.targetYear || new Date().getFullYear()}
         birthdate={resultData.birthdate}
       />
 
       {/* 方位サイト推奨セクション */}
-      <DirectionMapInfo />
+      {/* <DirectionMapInfo /> */}
 
       {/* 相性鑑定結果（既存コード）*/}
-      {finalCompatibilityData && (
+      {/* {finalCompatibilityData && (
         <div 
           style={{ 
             marginTop: 20, 
@@ -544,7 +544,7 @@ export default function Result({ resultData, onReset, compatibilityData }: Resul
         >
           <CompatibilityResult compatibilityData={finalCompatibilityData} />
         </div>
-      )}
+      )} */}
 
       {/* テンプレート選択モーダル */}
       <TemplateSelectionModal
@@ -558,7 +558,7 @@ export default function Result({ resultData, onReset, compatibilityData }: Resul
 
       {/* アクションボタン */}
       <div style={{ display: 'flex', justifyContent: 'center', margin: '0px auto 18px', gap: '15px', width: '100%', maxWidth: '500px' }}>
-        <button 
+        <button
           onClick={onReset}
           style={{
             padding: '10px 20px',
@@ -574,8 +574,8 @@ export default function Result({ resultData, onReset, compatibilityData }: Resul
         >
           新しい鑑定
         </button>
-        
-        <button 
+
+        <button
           onClick={openTemplateModal}
           disabled={isGeneratingPdf}
           style={{
