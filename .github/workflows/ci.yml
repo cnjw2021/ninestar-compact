@@ -32,7 +32,17 @@ jobs:
           touch frontend/.env.production.frontend
           touch frontend/.env.development.frontend
           touch backend/.env.production.backend
-          touch backend/.env.development.backend
+          cat <<EOF > backend/.env.development.backend
+SECRET_KEY=testsecretkey
+JWT_SECRET_KEY=testjwtsecretkey
+DB_USER=ninestarki
+DB_PASSWORD=ninestarki_password
+DB_HOST=mysql
+DB_NAME=ninestarki
+DB_PORT=3306
+DB_ROOT_USER=root
+DB_ROOT_PASSWORD=rootpassword
+EOF
           mkdir -p backend/logs backend/.pytest_cache
           chmod -R 777 backend/logs backend/.pytest_cache
 
