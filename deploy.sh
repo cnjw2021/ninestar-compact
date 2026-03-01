@@ -103,6 +103,20 @@ docker pull ${REGISTRY}-nginx:latest
 echo ""
 
 # --------------------------------------------------
+# 1.5. 이미지에서 CSV 데이터 추출 (MySQL LOAD DATA 용)
+# --------------------------------------------------
+echo -e "${YELLOW}1.5. 백엔드 이미지에서 CSV 데이터를 추출하여 호스트에 복사합니다...${NC}"
+mkdir -p ./backend/data/csv
+# 기존 데이터 삭제 후 새로 복사 (찌꺼기 방지)
+rm -rf ./backend/data/csv/*
+docker create --name backend-data-extractor ${REGISTRY}-backend:latest >/dev/null
+docker cp backend-data-extractor:/app/data/csv/. ./backend/data/csv/
+docker rm backend-data-extractor >/dev/null
+echo -e "${GREEN}   ✅ CSV 데이터 복사 완료${NC}"
+echo ""
+
+
+# --------------------------------------------------
 # 2. 새 컨테이너 실행
 # --------------------------------------------------
 echo -e "${YELLOW}2. 새 컨테이너 실행${NC}"
