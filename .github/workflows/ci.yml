@@ -23,12 +23,14 @@ jobs:
         uses: actions/checkout@v4
 
       # 2. 테스트 환경 준비 및 실행
-      - name: Prepare mock environment files
+      - name: Prepare mock environment files and directories
         run: |
           touch frontend/.env.production.frontend
           touch frontend/.env.development.frontend
           touch backend/.env.production.backend
           touch backend/.env.development.backend
+          mkdir -p backend/logs backend/.pytest_cache
+          chmod -R 777 backend/logs backend/.pytest_cache
 
       - name: Run Backend Tests
         run: make test
