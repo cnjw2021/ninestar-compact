@@ -106,9 +106,25 @@ def seed_database(cursor):
 def run_init():
     """
     [役割 変更]
-    DB 初期化はMySQL コンテナが担当. このスクリプトはスーパーユーザー作成を担当.
+    DB 初期化はMySQL コンテナが担当しますが、ボリュームの問題等でテーブルがない場合は
+    安全のためにテーブル作成と初期データシードを実行します。その後、スーパーユーザー作成を担当します。
     """
-    logger.info("DB init script started: Ensuring superuser exists...")
+    logger.info("DB init script started: Checking database state...")
+    
+    conn = get_mysql_connection()
+    cursor = conn.cursor()
+    
+    if not check_if_tables_exist(cursor):
+        logger.warning("テーブルが存在しません。テーブルの作成とデータのシードを開始します...")
+        execute_sql_file(cursor, os.path.join('mysql', 'init', '000_create_tables.sql'))
+        seed_database(cursor) # SQL 及び CSV データ
+        conn.commit()
+    else:
+        logger.info("テーブルは既に存在します。データシードはスキップします。")
+        
+    cursor.close()
+    conn.close()
+
     # テーブル 存在 関係なく、スーパーユーザーが存在しない場合は常に作成しようとします
     # create_superuser 関数 内部に既存 存在 チェック ロジックがあります
     create_superuser()
