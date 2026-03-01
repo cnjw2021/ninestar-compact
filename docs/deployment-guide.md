@@ -112,9 +112,14 @@ docker login ghcr.io -u <GITHUB_USER> -p <GITHUB_TOKEN>
 
 # 2. 배포 디렉토리 생성 및 필수 파일 배치
 mkdir -p /opt/ninestar && cd /opt/ninestar
-# docker-compose.prod.yml, deploy.sh, .env 파일, nginx/conf.d/ 등 배치
+# docker-compose.prod.yml, deploy.sh, init-ssl.sh, .env 파일, nginx/conf.d/ 등 배치
 
-# 3. 배포 실행
+# 3. SSL 인증서 최초 발급 (매우 중요!)
+# Nginx가 기동하려면 SSL 인증서가 반드시 필요하므로 deploy.sh 전에 먼저 실행합니다.
+chmod +x init-ssl.sh
+./init-ssl.sh
+
+# 4. 전체 서비스 배포 실행
 chmod +x deploy.sh
 ./deploy.sh
 ```
