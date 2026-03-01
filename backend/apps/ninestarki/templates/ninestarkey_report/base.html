@@ -248,10 +248,6 @@
         </div>
     </div>
 
-    <!-- 五行相関図ページ -->
-    <!-- 五行相関図セクションは2つの独立したページを生成します -->
-    {% include 'ninestarkey_report/sections/five_elements.html' %}
-
     <!-- 本命星属性ページ -->
     <div class="page">
         <div class="background"></div>
@@ -272,20 +268,6 @@
         </div>
     </div>
 
-    <!-- 年の運気ページ -->
-    <div class="page">
-        <div class="background"></div>
-        <div class="gradient-overlay"></div>
-        <div class="content">
-            {% include 'ninestarkey_report/sections/yearly_fortune.html' %}
-        </div>
-    </div>
-
-    <!-- 月の運気ページ -->
-    <!-- 月の運気セクションは特殊な構造となっていて、自身で4つの独立したページを生成します。 -->
-    <!-- そのため、ここでは月の運気セクションのページを直接インクルードします。 -->
-    {% include 'ninestarkey_report/sections/monthly_fortune.html' %}
-    
     <!-- 場所の運気ページ -->
     <div class="page">
         <div class="background"></div>
@@ -295,25 +277,5 @@
         </div>
     </div>
     
-    <!-- 方位サイト案内ページ -->
-    <div class="page">
-        <div class="background"></div>
-        <div class="gradient-overlay"></div>
-        <div class="content">
-            {% include 'ninestarkey_report/sections/direction_app_site.html' %}
-        </div>
-    </div>
-    
-    <!-- 相性鑑定結果ページ -->
-    {% if compatibility and compatibility.readings %}
-    <div class="page">
-        <div class="background"></div>
-        <div class="gradient-overlay"></div>
-        <div class="content">
-            {% include 'ninestarkey_report/sections/compatibility_results.html' %}
-        </div>
-    </div>
-    {% endif %}
-
 </body>
 </html> 
