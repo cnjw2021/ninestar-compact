@@ -135,6 +135,15 @@ test: ## 🧪 Dockerコンテナ内でテストを実行します。
 	# 新しいbackend-testサービスを使用してpytestを実行
 	docker compose -f docker-compose.yml -f docker-compose.dev.yml run --rm backend-test pytest
 
+test-unit: ## 🧪 単体テストのみ実行します。(CI用: DB不要)
+	@echo "### [dev] 単体テストのみ実行します... ###"
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml run --rm backend-test pytest --ignore=tests/golden_master --ignore=tests/test_direction_fortune_birthdate_2026.py -v
+
+test-integration: ## 🧪 統合テストのみ実行します。(DB + バックエンドAPI必須)
+	@echo "### [dev] 統合テストのみ実行します... ###"
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml run --rm backend-test pytest tests/golden_master tests/test_direction_fortune_birthdate_2026.py -v
+
+
 # ==============================================================================
 # 🔐 データベースとシステムの管理
 # ==============================================================================

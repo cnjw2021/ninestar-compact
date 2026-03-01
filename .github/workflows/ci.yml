@@ -73,18 +73,10 @@ jobs:
           mkdir -p backend/logs backend/.pytest_cache
           chmod -R 777 backend/logs backend/.pytest_cache
 
-      - name: Debug Docker Compose Config
-        run: |
-          echo "=== Merged backend config ==="
-          docker compose -f docker-compose.yml -f docker-compose.dev.yml config | grep -A 30 "backend:"
-          echo "=== Backend env_file contents ==="
-          cat backend/.env.development.backend
-          echo "=== Root .env contents ==="
-          cat .env
 
-      - name: Run Backend Tests
+      - name: Run Unit Tests
         run: |
-          make test
+          make test-unit
 
       - name: Dump Docker Logs on Failure
         if: failure()
