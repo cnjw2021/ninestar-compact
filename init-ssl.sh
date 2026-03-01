@@ -13,7 +13,7 @@
 
 # --- 설정값 (환경에 맞게 수정) ---
 domains=(831shop.site www.831shop.site)
-email="admin@831shop.site"   # Let's Encrypt 알림 수신 이메일
+email="hopstepjump1015@gmail.com"   # Let's Encrypt 알림 수신 이메일
 COMPOSE_FILE="docker-compose.prod.yml"
 # --- 설정값 끝 ---
 
