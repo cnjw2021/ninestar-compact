@@ -147,6 +147,10 @@ test-integration: ## 🧪 統合テストのみ実行します。(DB + バック
 # ==============================================================================
 # 🔐 データベースとシステムの管理
 # ==============================================================================
+db-seed: ## 🌱 データベースを完全にリセットし、全データ（SQL + CSV）を再投入します。
+	@echo "### データベースを完全にシード（SQL + CSV）します... ###"
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml run --rm backend-test python db_manage.py reset
+
 db-init: ## ✅ [安全] DBが空の場合にのみテーブル作成と初期データ挿入
 	@echo "### データベースを安全に初期化します... ###"
 	$(COMPOSE) run --rm backend python db_manage.py init

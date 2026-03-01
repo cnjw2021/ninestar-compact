@@ -54,9 +54,16 @@ jobs:
           echo "DATABASE_URL=mysql+pymysql://${DB_USER}:${DB_PASSWORD}@mysql:3306/${DB_NAME}?charset=utf8mb4" >> backend/.env.development.backend
           echo "SUPERUSER_EMAIL=superuser" >> backend/.env.development.backend
           echo "SUPERUSER_PASSWORD=$DB_PASSWORD" >> backend/.env.development.backend
+          echo "SECURE_FILE_PRIV=/var/lib/mysql-files" >> backend/.env.development.backend
+          echo "FLASK_DEBUG=1" >> backend/.env.development.backend
 
           mkdir -p backend/logs backend/.pytest_cache
           chmod -R 777 backend/logs backend/.pytest_cache
+
+      - name: Seed Database (SQL + CSV)
+        run: |
+          echo "### Seeding database with full data (SQL + CSV)... ###"
+          make db-seed
 
       - name: Run Integration Tests
         run: |
