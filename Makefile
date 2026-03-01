@@ -158,8 +158,8 @@ db-reset: ## 💥 [注意] DBを完全に初期化します。すべてのデー
 # --- 🚀 プロダクション(本番)環境専用コマンド ---
 prod-mysql-restart: ## 🔄 [運用] 本番環境のMySQLコンテナを再起動します。
 	@echo "### 本番環境のMySQLを再起動します... ###"
-	docker compose --env-file backend/.env.production.backend -f docker-compose.prod.yml down mysql
-	docker compose --env-file backend/.env.production.backend -f docker-compose.prod.yml up -d mysql
+	docker compose --env-file .env.production.backend -f docker-compose.prod.yml down mysql
+	docker compose --env-file .env.production.backend -f docker-compose.prod.yml up -d mysql
 
 prod-db-reset: ## 💥 [注意/運用] 本番環境の稼働中コンテナでDBをリセットします。
 	@echo "### 本番環境のデータベースをリセットし、初期データをシードします... ###"
