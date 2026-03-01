@@ -20,6 +20,18 @@ set -e
 COMPOSE_FILE="docker-compose.prod.yml"
 REGISTRY="ghcr.io/cnjw2021/ninestar-compact"
 
+# --------------------------------------------------
+# 환경변수 로드 (docker-compose 파일의 ${...} 치환을 위함)
+# --------------------------------------------------
+if [ -f ".env.production.backend" ]; then
+    set -a
+    source .env.production.backend
+    set +a
+else
+    echo -e "\033[0;31m❌ .env.production.backend 파일을 찾을 수 없습니다.\033[0m"
+    exit 1
+fi
+
 # 색상 정의
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
